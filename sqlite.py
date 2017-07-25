@@ -4,21 +4,17 @@ import sqlite3
 
 #conn = sqlite3.connect('ma_base.db')
 #
-#CREATION TABLE
-# conn = sqlite3.connect('ma_base.db')
-# cursor = conn.cursor()
-# cursor.execute("""
-# CREATE TABLE IF NOT EXISTS Journal(
-#      id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-#      Date DATE,
-#      Compte TEXT,
-#      Libelle TEXT,
-#      Sens TEXT,
-#      Montant REAL
-# )
-# """)
-# conn.commit()
-# conn.close()
+# CREATION TABLE
+conn = sqlite3.connect('ma_base.db')
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Comptes(
+     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+     Compte TEXT,
+     Type TEXT
+     )""")
+conn.commit()
+conn.close()
 
 
 #REQUETE INSERTION LIGNE
@@ -32,6 +28,28 @@ def AddToBase(DBDate,DBCompte,DBLibelle,DBSens,DBMontant):
     conn.close()
 
 
+
+
+def AddAccount(AccName,AccType):
+
+    conn = sqlite3.connect('ma_base.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+    INSERT INTO Comptes (Compte, Type) VALUES(?, ?)""", (AccName,AccType))
+    conn.commit()
+    conn.close()
+
+
+def SelectAccounts():
+
+    conn = sqlite3.connect('ma_base.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT Compte, Type FROM Comptes""")
+    result = cursor.fetchall()
+    conn.close()
+    return result
+
 #REQUETE SELECT
 def SelectQuery():
     conn = sqlite3.connect('ma_base.db')
@@ -44,15 +62,6 @@ def SelectQuery():
 
 
 def MonthQuery():
-    conn = sqlite3.connect('ma_base.db')
-    cursor = conn.cursor()
-    cursor.execute("""SELECT strftime('%Y',Date) FROM Journal GROUP BY strftime('%Y',Date) ORDER BY strftime('%Y',Date) """)
-    result = cursor.fetchall()
-
-    conn.close()
-    return result
-
-def MonthQuery(Month):
     conn = sqlite3.connect('ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""SELECT strftime('%Y',Date) FROM Journal GROUP BY strftime('%Y',Date) ORDER BY strftime('%Y',Date) """)

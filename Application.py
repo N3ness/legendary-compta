@@ -2,6 +2,8 @@ from tkinter import *
 import sqlite
 import tkinter.ttk as ttk
 import dateutil.parser as parser
+import Comptes as cpt
+
 
 
 
@@ -27,6 +29,9 @@ def capartenbase(iptDate, iptCompte, iptLibelle, iptSens, iptMontant):
     iptDate= str(parser.parse(iptDate).year) + '-' + mois + '-' + jour
     sqlite.AddToBase(str(iptDate), str(iptCompte), str(iptLibelle), Sens, iptMontant)
 
+
+
+
 class appli(Tk):
     def __init__(self, parent):
         Tk.__init__(self,parent)
@@ -35,7 +40,6 @@ class appli(Tk):
 
     def initialize(self):
         self.Frame_Appli = Frame(self.parent, borderwidth=2, relief=GROOVE)
-
 
 
         Frame_Menu = Frame(self.parent)
@@ -86,13 +90,12 @@ class appli(Tk):
         label = Label(self.Frame_Appli, text="Compte")
         label.pack()
         listeComptes = Listbox(self.Frame_Appli,width=60)
-        listeComptes.insert(1, "Consultation Seul")
-        listeComptes.insert(2, "Consultation Couple")
-        listeComptes.insert(3, "Commission sur consultation")
-        listeComptes.insert(4, "Assurance")
-        listeComptes.insert(5, "Frais bancaires")
-        listeComptes.insert(5, "Fournitures")
-        listeComptes.insert(5, "Autre charge")
+
+        idx=1
+        for i in sqlite.SelectAccounts():
+            listeComptes.insert(idx, "  " + i[0])
+            idx+=1
+
         listeComptes.pack(pady=5)
 
         # Libelle
@@ -120,7 +123,11 @@ class appli(Tk):
         iptMontant.pack()
 
         # bouton valider
-        bouton = Button(self.Frame_Appli, text="valider",width=50, command=lambda: capartenbase(iptDate.get(),listeComptes.get(listeComptes.curselection()),iptLib.get(),iptSens.get(),iptMontant.get()))
+        bouton = Button(self.Frame_Appli,
+                        text="valider",width=50,
+                        command=lambda: capartenbase(iptDate.get(),
+                                        listeComptes.get(listeComptes.curselection()),
+                                        iptLib.get(),iptSens.get(),iptMontant.get()))
         bouton.pack(pady=10)
 
     def voir_journal(self):
@@ -137,7 +144,6 @@ class appli(Tk):
         tree_dt.heading("#0",text="Date")
         tree_dt.column("#0", width=110)
 
-
         for dt in sqlite.MonthQuery():
             id = tree_dt.insert("",0,text=parser.parse(dt[0]).year)
             tree_dt.insert(id, "end", text='Janvier')
@@ -152,8 +158,6 @@ class appli(Tk):
             tree_dt.insert(id, "end", text='Octobre')
             tree_dt.insert(id, "end", text='Novembre')
             tree_dt.insert(id, "end", text='Décembre')
-
-
 
 
         label = Label(self.Frame_Appli,text='Journal')
@@ -186,9 +190,7 @@ class appli(Tk):
         # # liste.pack(expand=TRUE,fill=Y)
 
 
-
 # x = str.index(i[0],len(i) + (" "*(10)
-
 
 
 if __name__ == "__main__":
@@ -197,8 +199,3 @@ if __name__ == "__main__":
     app.mainloop()
 
 
-
-#
-#
-# print(Nice_Line(("zizi","fefesse","chatte")))
-# print(Nice_Line(("couille","cul","bite")))

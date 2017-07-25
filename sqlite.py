@@ -3,18 +3,18 @@ import sqlite3
 
 
 #conn = sqlite3.connect('ma_base.db')
-#
-# CREATION TABLE
-conn = sqlite3.connect('ma_base.db')
-cursor = conn.cursor()
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS Comptes(
-     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-     Compte TEXT,
-     Type TEXT
-     )""")
-conn.commit()
-conn.close()
+# #
+# # CREATION TABLE
+# conn = sqlite3.connect('ma_base.db')
+# cursor = conn.cursor()
+# cursor.execute("""
+# CREATE TABLE IF NOT EXISTS Comptes(
+#      id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+#      Compte TEXT,
+#      Type TEXT
+#      )""")
+# conn.commit()
+# conn.close()
 
 
 #REQUETE INSERTION LIGNE
@@ -45,7 +45,7 @@ def SelectAccounts():
     conn = sqlite3.connect('ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT Compte, Type FROM Comptes""")
+    SELECT ID, Compte, Type FROM Comptes""")
     result = cursor.fetchall()
     conn.close()
     return result
@@ -84,3 +84,5 @@ def Suppression():
 # cursor.execute("""DROP TABLE Journal""")
 # conn.commit()
 # conn.close()
+
+print(SelectAccounts()[1][1])

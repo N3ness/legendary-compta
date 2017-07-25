@@ -2,19 +2,20 @@ from tkinter import *
 import sqlite
 import tkinter.ttk as ttk
 import dateutil.parser as parser
-import Comptes as cpt
+# import Comptes as cpt
 
 
 
 
 def capartenbase(iptDate, iptCompte, iptLibelle, iptSens, iptMontant):
     Sens=''
-    if iptSens==1:
-        Sens='Entree'
-    elif iptSens == 2:
-        Sens ='Sortie'
+    if( iptSens==1 and iptCompte[2] == "Produits" )or(iptSens==2 and iptCompte[2] == "Charges"):
+        Sens='Credit'
+    elif ( iptSens==2 and iptCompte[2] == "Produits" )or(iptSens==1 and iptCompte[2] == "Charges"):
+        Sens ='Debit'
     else:
         print('erreur valeur sens')
+
 
     if len(str(parser.parse(iptDate).month))== 1:
         mois="0"+str(parser.parse(iptDate).month)
@@ -91,10 +92,9 @@ class appli(Tk):
         label.pack()
         listeComptes = Listbox(self.Frame_Appli,width=60)
 
-        idx=1
+        maliste= sqlite.SelectAccounts()
         for i in sqlite.SelectAccounts():
-            listeComptes.insert(idx, "  " + i[0])
-            idx+=1
+            listeComptes.insert(i[0], "  " + i[1])
 
         listeComptes.pack(pady=5)
 
@@ -126,7 +126,7 @@ class appli(Tk):
         bouton = Button(self.Frame_Appli,
                         text="valider",width=50,
                         command=lambda: capartenbase(iptDate.get(),
-                                        listeComptes.get(listeComptes.curselection()),
+                                         maliste[listeComptes.curselection()[0]],
                                         iptLib.get(),iptSens.get(),iptMontant.get()))
         bouton.pack(pady=10)
 

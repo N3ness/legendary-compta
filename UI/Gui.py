@@ -1,39 +1,12 @@
-from tkinter import *
-import sqlite
 import tkinter.ttk as ttk
-import dateutil.parser as parser
-# import Comptes as cpt
+from tkinter import *
 
 
+from DA.Da import *
 
 
-def capartenbase(iptDate, iptCompte, iptLibelle, iptSens, iptMontant):
-    Sens=''
-    if( iptSens==1 and iptCompte[2] == "Produits" )or(iptSens==2 and iptCompte[2] == "Charges"):
-        Sens='Credit'
-    elif ( iptSens==2 and iptCompte[2] == "Produits" )or(iptSens==1 and iptCompte[2] == "Charges"):
-        Sens ='Debit'
-    else:
-        print('erreur valeur sens')
+class Gui(Tk):
 
-
-    if len(str(parser.parse(iptDate).month))== 1:
-        mois="0"+str(parser.parse(iptDate).month)
-    else:
-        mois=str(parser.parse(iptDate).month)
-
-    if len(str(parser.parse(iptDate).day))== 1:
-        jour="0"+str(parser.parse(iptDate).day)
-    else:
-        jour=str(parser.parse(iptDate).day)
-
-    iptDate= str(parser.parse(iptDate).year) + '-' + mois + '-' + jour
-    sqlite.AddToBase(str(iptDate), str(iptCompte), str(iptLibelle), Sens, iptMontant)
-
-
-
-
-class appli(Tk):
     def __init__(self, parent):
         Tk.__init__(self,parent)
         self.parent = parent
@@ -41,7 +14,6 @@ class appli(Tk):
 
     def initialize(self):
         self.Frame_Appli = Frame(self.parent, borderwidth=2, relief=GROOVE)
-
 
         Frame_Menu = Frame(self.parent)
         Frame_Menu.pack(side=LEFT, padx=10,pady=10)
@@ -125,9 +97,9 @@ class appli(Tk):
         # bouton valider
         bouton = Button(self.Frame_Appli,
                         text="valider",width=50,
-                        command=lambda: capartenbase(iptDate.get(),
-                                         maliste[listeComptes.curselection()[0]],
-                                        iptLib.get(),iptSens.get(),iptMontant.get()))
+                        command=lambda: Da.AddToDB(iptDate.get(),
+                                                maliste[listeComptes.curselection()[0]],
+                                                iptLib.get(), iptSens.get(), iptMontant.get()))
         bouton.pack(pady=10)
 
     def voir_journal(self):
@@ -146,19 +118,18 @@ class appli(Tk):
 
         for dt in sqlite.MonthQuery():
             id = tree_dt.insert("",0,text=parser.parse(dt[0]).year)
-            tree_dt.insert(id, "end", text='Janvier')
-            tree_dt.insert(id, "end", text='Février')
-            tree_dt.insert(id, "end", text='Mars')
-            tree_dt.insert(id, "end", text='Avril')
-            tree_dt.insert(id, "end", text='Mai')
-            tree_dt.insert(id, "end", text='Juin')
-            tree_dt.insert(id, "end", text='Juillet')
-            tree_dt.insert(id, "end", text='Aout')
-            tree_dt.insert(id, "end", text='Septembre')
-            tree_dt.insert(id, "end", text='Octobre')
-            tree_dt.insert(id, "end", text='Novembre')
-            tree_dt.insert(id, "end", text='Décembre')
-
+            tree_dt.insert(id, "end", text='Janvier', values=1)
+            tree_dt.insert(id, "end", text='Février', values=2)
+            tree_dt.insert(id, "end", text='Mars', values=3)
+            tree_dt.insert(id, "end", text='Avril', values=4)
+            tree_dt.insert(id, "end", text='Mai', values=5)
+            tree_dt.insert(id, "end", text='Juin', values=6)
+            tree_dt.insert(id, "end", text='Juillet', values=7)
+            tree_dt.insert(id, "end", text='Aout', values=8)
+            tree_dt.insert(id, "end", text='Septembre', values=9)
+            tree_dt.insert(id, "end", text='Octobre', values=10)
+            tree_dt.insert(id, "end", text='Novembre', values=11)
+            tree_dt.insert(id, "end", text='Décembre', values=12)
 
         label = Label(self.Frame_Appli,text='Journal')
         label.pack(expand=FALSE)
@@ -174,9 +145,6 @@ class appli(Tk):
         tree.column("Sens", width=80)
         tree.column("Montant", width=80)
 
-
-
-
         for i in cols:
             tree.heading(i,text=i)
 
@@ -185,17 +153,3 @@ class appli(Tk):
 
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
-
-
-        # # liste.pack(expand=TRUE,fill=Y)
-
-
-# x = str.index(i[0],len(i) + (" "*(10)
-
-
-if __name__ == "__main__":
-    app = appli(None)
-    app.title('merfzz')
-    app.mainloop()
-
-

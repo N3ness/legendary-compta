@@ -8,10 +8,14 @@ import sqlite3
 # conn = sqlite3.connect('ma_base.db')
 # cursor = conn.cursor()
 # cursor.execute("""
-# CREATE TABLE IF NOT EXISTS Comptes(
+# CREATE TABLE Journal(
 #      id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-#      Compte TEXT,
-#      Type TEXT
+#      Date DATE,
+#      Compte INTEGER,
+#      Libelle TEXT,
+#      Sens TEXT,
+#      Montant REAL,
+#      FOREIGN KEY(Compte) REFERENCES Comptes(id)
 #      )""")
 # conn.commit()
 # conn.close()
@@ -54,7 +58,7 @@ def SelectAccounts():
 def SelectQuery():
     conn = sqlite3.connect('ma_base.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT * FROM Journal""")
+    cursor.execute("""SELECT j.id, j.Date,c.Compte,j.Libelle,j.Sens,j.Montant FROM Journal j JOIN Comptes c ON j.Compte = c.id""")
     result = cursor.fetchall()
 
     conn.close()

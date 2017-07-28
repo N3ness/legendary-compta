@@ -12,6 +12,8 @@ class Gui(Tk):
         self.parent = parent
         self.initialize()
 
+
+
     def initialize(self):
         self.Frame_Appli = Frame(self.parent, borderwidth=2, relief=GROOVE)
 
@@ -66,8 +68,8 @@ class Gui(Tk):
 
         maliste= sqlite.SelectAccounts()
         for i in sqlite.SelectAccounts():
-            listeComptes.insert(i[0], "  " + i[1])
-
+            listeComptes.insert(i[0],str('  ' + i[1]))
+            print (i[0],i[1])
         listeComptes.pack(pady=5)
 
         # Libelle
@@ -112,7 +114,9 @@ class Gui(Tk):
         frame_dt.pack(side=LEFT, padx=20, pady=20)
 
         tree_dt = ttk.Treeview(frame_dt)
+
         tree_dt.pack(padx=2, pady=2)
+
         tree_dt.heading("#0",text="Date")
         tree_dt.column("#0", width=110)
 
@@ -131,6 +135,7 @@ class Gui(Tk):
             tree_dt.insert(id, "end", text='Novembre', values=11)
             tree_dt.insert(id, "end", text='Décembre', values=12)
 
+
         label = Label(self.Frame_Appli,text='Journal')
         label.pack(expand=FALSE)
 
@@ -148,8 +153,16 @@ class Gui(Tk):
         for i in cols:
             tree.heading(i,text=i)
 
-        for item in sqlite.SelectQuery():
-            tree.insert("",0,text="",values=item)
 
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
+
+        tree_dt.bind("<Double-1>", self.printCul)
+
+
+    def printCul(self,event):
+        print('cul')
+
+    # for item in sqlite.SelectQuery(2, xxx):
+    #     tree.insert("", 0, text="", values=item)
+

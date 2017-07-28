@@ -49,16 +49,18 @@ def SelectAccounts():
     conn = sqlite3.connect('ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT ID, Compte, Type FROM Comptes""")
+    SELECT id, Compte, Type FROM Comptes""")
     result = cursor.fetchall()
     conn.close()
     return result
 
 #REQUETE SELECT
-def SelectQuery():
+def SelectQuery(querymonth,queryyear):
     conn = sqlite3.connect('ma_base.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT j.id, j.Date,c.Compte,j.Libelle,j.Sens,j.Montant FROM Journal j JOIN Comptes c ON j.Compte = c.id""")
+    cursor.execute("""SELECT j.id, j.Date,c.Compte,j.Libelle,j.Sens,j.Montant
+                    FROM Journal j JOIN Comptes c ON j.Compte = c.id
+                    WHERE strftime('%m', j.date)= ? AND strftime('%y', j.Date) = ? """,(querymonth,queryyear) )
     result = cursor.fetchall()
 
     conn.close()
@@ -70,7 +72,6 @@ def MonthQuery():
     cursor = conn.cursor()
     cursor.execute("""SELECT strftime('%Y',Date) FROM Journal GROUP BY strftime('%Y',Date) ORDER BY strftime('%Y',Date) """)
     result = cursor.fetchall()
-
     conn.close()
     return result
 

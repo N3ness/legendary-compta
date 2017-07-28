@@ -25,3 +25,6 @@ class Da():
 
         iptDate= str(parser.parse(iptDate).year) + '-' + mois + '-' + jour
         sqlite.AddToBase(str(iptDate), iptCompte[0], str(iptLibelle), Sens, iptMontant)
+
+
+

@@ -24,7 +24,7 @@ import sqlite3
 #REQUETE INSERTION LIGNE
 def AddToBase(DBDate,DBCompte,DBLibelle,DBSens,DBMontant):
 
-    conn = sqlite3.connect('ma_base.db')
+    conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO Journal(Date, Compte, Libelle, Sens, Montant) VALUES(?, ?, ?, ?, ?)""", (DBDate,DBCompte,DBLibelle,DBSens,DBMontant))
@@ -36,7 +36,7 @@ def AddToBase(DBDate,DBCompte,DBLibelle,DBSens,DBMontant):
 
 def AddAccount(AccName,AccType):
 
-    conn = sqlite3.connect('ma_base.db')
+    conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO Comptes (Compte, Type) VALUES(?, ?)""", (AccName,AccType))
@@ -46,7 +46,7 @@ def AddAccount(AccName,AccType):
 
 def SelectAccounts():
 
-    conn = sqlite3.connect('ma_base.db')
+    conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""
     SELECT id, Compte, Type FROM Comptes""")
@@ -56,19 +56,19 @@ def SelectAccounts():
 
 #REQUETE SELECT
 def SelectQuery(querymonth,queryyear):
-    conn = sqlite3.connect('ma_base.db')
+    conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT j.id, j.Date,c.Compte,j.Libelle,j.Sens,j.Montant
-                    FROM Journal j JOIN Comptes c ON j.Compte = c.id
-                    WHERE strftime('%m', j.date)= ? AND strftime('%y', j.Date) = ? """,(querymonth,queryyear) )
+    cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
+                    FROM Journal j JOIN Comptes c ON j.compte = c.id
+                    WHERE strftime('%m',j.date)=? AND strftime('%Y', j.date) = ?
+                     """,(querymonth,queryyear))
     result = cursor.fetchall()
-
     conn.close()
     return result
 
 
 def MonthQuery():
-    conn = sqlite3.connect('ma_base.db')
+    conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""SELECT strftime('%Y',Date) FROM Journal GROUP BY strftime('%Y',Date) ORDER BY strftime('%Y',Date) """)
     result = cursor.fetchall()
@@ -77,7 +77,7 @@ def MonthQuery():
 
 #REQUETE SUPRESSION
 def Suppression():
-    conn = sqlite3.connect('ma_base.db')
+    conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
     cursor.execute("""DELETE FROM Journal""")
     conn.commit()
@@ -90,4 +90,4 @@ def Suppression():
 # conn.commit()
 # conn.close()
 
-print(SelectAccounts()[1][1])
+# print(SelectAccounts()[1][1])

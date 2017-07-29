@@ -38,14 +38,14 @@ class Gui(Tk):
         self.Frame_Appli.pack(side=LEFT, padx=20, pady=20, fill=NONE, expand=TRUE)
         self.Add_Input()
 
-    def unload_Appli(self):
+    def unload_Appli(self,FrameToUnload):
 
-        list = self.Frame_Appli.pack_slaves()
+        list = FrameToUnload.pack_slaves()
         for widget in list:
             widget.destroy()
 
     def Add_Input(self):
-        self.unload_Appli()
+        self.unload_Appli(self.Frame_Appli)
 
         # Label nouvelle entrée
         label = Label(self.Frame_Appli, text="Nouvelle entrée")
@@ -106,7 +106,7 @@ class Gui(Tk):
 
     def voir_journal(self):
 
-        self.unload_Appli()
+        self.unload_Appli(self.Frame_Appli)
 
         self.Frame_Appli.pack(fill=BOTH)
 
@@ -121,7 +121,7 @@ class Gui(Tk):
         tree_dt.column("#0", width=110)
 
         for dt in sqlite.MonthQuery():
-            id = tree_dt.insert("",0,text=parser.parse(dt[0]).year)
+            id = tree_dt.insert("",0,iid= parser.parse(dt[0]).year,text=parser.parse(dt[0]).year)
             tree_dt.insert(id, "end", text='Janvier', values=1)
             tree_dt.insert(id, "end", text='Février', values=2)
             tree_dt.insert(id, "end", text='Mars', values=3)
@@ -142,8 +142,8 @@ class Gui(Tk):
         scrollbar = Scrollbar(self.Frame_Appli)
         scrollbar.pack(side=RIGHT, fill=Y)
 
-        cols=("CLE","Date","Compte", "Libellé", "Sens","Montant")
-        dcols=("Date","Compte", "Libellé", "Sens","Montant")
+        cols = ("CLE","Date","Compte", "Libellé", "Sens","Montant")
+        dcols =("Date","Compte", "Libellé", "Sens","Montant")
         tree=ttk.Treeview(self.Frame_Appli,columns=cols, displaycolumns=dcols,yscrollcommand=scrollbar.set)
         tree['show'] = 'headings'
         tree.column("Date",width=80)
@@ -153,16 +153,23 @@ class Gui(Tk):
         for i in cols:
             tree.heading(i,text=i)
 
-
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
 
-        tree_dt.bind("<Double-1>", self.printCul)
+        tree_dt.bind("<Double-1>", lambda _: self.JournalLoad("loadJournal",tree,tree_dt.parent(item=tree_dt.focus()),
+                                                              tree_dt.item(tree_dt.focus())['values'][0]))
 
 
-    def printCul(self,event):
-        print('cul')
+    def JournalLoad(self,event,tree,SelectedYear,SelectedMonth):
+        for i in tree.get_children():
+            tree.delete(i)
+        SelectedYear=str(SelectedYear)
+        if len(str(SelectedMonth))==1:
+            SelectedMonth = '0' + str(SelectedMonth)
+        else:
+            SelectedMonth = str(SelectedMonth)
 
-    # for item in sqlite.SelectQuery(2, xxx):
-    #     tree.insert("", 0, text="", values=item)
+        for item in sqlite.SelectQuery(SelectedMonth, SelectedYear):
+            # print(item)
+            tree.insert("", 0, text="", values=item)
 

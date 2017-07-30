@@ -3,13 +3,14 @@ from tkinter import *
 
 
 from DA.Da import *
-
+import DB.sqlite
 
 class Gui(Tk):
 
     def __init__(self, parent):
         Tk.__init__(self,parent)
         self.parent = parent
+        self.Database=Da(Name='DB/ma_base.db')
         self.initialize()
 
 
@@ -64,10 +65,12 @@ class Gui(Tk):
         # Compte
         label = Label(self.Frame_Appli, text="Compte")
         label.pack()
+
         listeComptes = Listbox(self.Frame_Appli,width=60)
 
-        maliste= sqlite.SelectAccounts()
-        for i in sqlite.SelectAccounts():
+
+        maliste = self.Database.SelectAccounts()
+        for i in maliste:
             listeComptes.insert(i[0],str('  ' + i[1]))
             print (i[0],i[1])
         listeComptes.pack(pady=5)
@@ -96,12 +99,17 @@ class Gui(Tk):
         iptMontant = Entry(self.Frame_Appli, width=60)
         iptMontant.pack()
 
+
+
+
         # bouton valider
         bouton = Button(self.Frame_Appli,
                         text="valider",width=50,
-                        command=lambda: Da.AddToDB(iptDate.get(),
+                        command=lambda: self.Database.AddToDB(iptDate.get(),
                                                 maliste[listeComptes.curselection()[0]],
                                                 iptLib.get(), iptSens.get(), iptMontant.get()))
+
+
         bouton.pack(pady=10)
 
     def voir_journal(self):
@@ -120,8 +128,8 @@ class Gui(Tk):
         tree_dt.heading("#0",text="Date")
         tree_dt.column("#0", width=110)
 
-        for dt in sqlite.MonthQuery():
-            id = tree_dt.insert("",0,iid= parser.parse(dt[0]).year,text=parser.parse(dt[0]).year)
+        for dt in DB.sqlite.MonthQuery():
+            id = tree_dt.insert("",0,iid= parser.parse(dt[0]).year,text=parser.parse(dt[0]).year,values=parser.parse(dt[0]).year)
             tree_dt.insert(id, "end", text='Janvier', values=1)
             tree_dt.insert(id, "end", text='Février', values=2)
             tree_dt.insert(id, "end", text='Mars', values=3)
@@ -156,7 +164,7 @@ class Gui(Tk):
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
 
-        tree_dt.bind("<Double-1>", lambda _: self.JournalLoad("loadJournal",tree,tree_dt.parent(item=tree_dt.focus()),
+        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.JournalLoad("loadJournal",tree,tree_dt.parent(item=tree_dt.focus()),
                                                               tree_dt.item(tree_dt.focus())['values'][0]))
 
 
@@ -169,7 +177,7 @@ class Gui(Tk):
         else:
             SelectedMonth = str(SelectedMonth)
 
-        for item in sqlite.SelectQuery(SelectedMonth, SelectedYear):
+        for item in self.Database.SelectQuery(SelectedMonth, SelectedYear):
             # print(item)
             tree.insert("", 0, text="", values=item)
 

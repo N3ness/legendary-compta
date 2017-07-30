@@ -150,13 +150,13 @@ class Gui(Tk):
         scrollbar = Scrollbar(self.Frame_Appli)
         scrollbar.pack(side=RIGHT, fill=Y)
 
-        cols = ("CLE","Date","Compte", "Libellé", "Sens","Montant")
-        dcols =("Date","Compte", "Libellé", "Sens","Montant")
+        cols = ("CLE","Date","Compte", "Libellé", "Débit","Crédit")
+        dcols =("Date","Compte", "Libellé", "Débit","Crédit")
         tree=ttk.Treeview(self.Frame_Appli,columns=cols, displaycolumns=dcols,yscrollcommand=scrollbar.set)
         tree['show'] = 'headings'
         tree.column("Date",width=80)
-        tree.column("Sens", width=80)
-        tree.column("Montant", width=80)
+        tree.column("Débit", width=80)
+        tree.column("Crédit", width=80)
 
         for i in cols:
             tree.heading(i,text=i)
@@ -178,6 +178,10 @@ class Gui(Tk):
             SelectedMonth = str(SelectedMonth)
 
         for item in self.Database.SelectQuery(SelectedMonth, SelectedYear):
-            # print(item)
-            tree.insert("", 0, text="", values=item)
+            print(item)
+            if item[4]==('Debit'):
+                tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],item[5],0))
+            elif item[4]==('Credit'):
+                tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],0,item[5]))
+
 

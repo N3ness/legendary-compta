@@ -162,8 +162,8 @@ class Gui(Tk):
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
 
-        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.JournalLoad("loadJournal",tree,tree_dt.parent(item=tree_dt.focus()),
-                                                              tree_dt.item(tree_dt.focus())['values'][0]))
+        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.JournalLoad('',tree,tree_dt.parent(item=tree_dt.focus()),
+                                                                        tree_dt.item(tree_dt.focus())['values'][0]))
 
 
     def JournalLoad(self,event,tree,SelectedYear,SelectedMonth):
@@ -198,7 +198,8 @@ class Gui(Tk):
         tree_ct.column("#0", width=200)
 
         for i in self.Database.SelectAccounts():
-            tree_ct.insert("",0,text=i[1],values=i[1])
+
+            tree_ct.insert("",0,text=i[1],values=[i[1]])
 
         label = Label(self.Frame_Appli, text='Compte')
         label.pack(expand=FALSE)
@@ -221,17 +222,16 @@ class Gui(Tk):
         tree.pack(fill=BOTH, expand=True)
 
         tree_ct.bind("<<TreeviewSelect>>",
-                     lambda _: print(tree_ct.item(tree_ct.focus())))
+                     lambda _: self.AccLoad(tree, SelectedMonth= tree_ct.item(tree_ct.focus())['values']))
 
-                     # self.JournalLoad("LoadJournal", tree,
-                     #                            tree_ct.item(tree_ct.focus())))
-
-    def JournalLoad(self, event, tree, SelectedMonth):
+    def AccLoad(self, tree, SelectedMonth):
         for i in tree.get_children():
             tree.delete(i)
+
+        print(SelectedMonth)
         for item in self.Database.SelectAccountDetail(SelectedMonth):
-            print(item)
+
             if item[4] == ('Debit'):
-                tree.insert("", 0, text="", values=(item[0], item[1], item[2], item[3], item[5], 0))
+                tree.insert("", 0, text="", values=(item[0],item[1], item[3], item[5], 0))
             elif item[4] == ('Credit'):
-                tree.insert("", 0, text="", values=(item[0], item[1], item[2], item[3], 0, item[5]))
+                tree.insert("", 0, text="", values=(item[0],item[1], item[3], 0, item[5]))

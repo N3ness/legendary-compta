@@ -27,7 +27,7 @@ class Gui(Tk):
         Bouton_Journal = Button(Frame_Menu, text='Voir le Journal',command=self.voir_journal)
         Bouton_Journal.pack(pady=5,fill=X)
 
-        Bouton_Comptes = Button(Frame_Menu,text='Voir les Comptes')
+        Bouton_Comptes = Button(Frame_Menu,text='Voir les Comptes',command=self.voir_comptes)
         Bouton_Comptes.pack(pady=5,fill=X)
 
         Bouton_Resultat = Button(Frame_Menu, text='Voir le Resultat')
@@ -67,7 +67,6 @@ class Gui(Tk):
         label.pack()
 
         listeComptes = Listbox(self.Frame_Appli,width=60)
-
 
         maliste = self.Database.SelectAccounts()
         for i in maliste:
@@ -143,7 +142,6 @@ class Gui(Tk):
             tree_dt.insert(id, "end", text='Novembre', values=11)
             tree_dt.insert(id, "end", text='Décembre', values=12)
 
-
         label = Label(self.Frame_Appli,text='Journal')
         label.pack(expand=FALSE)
 
@@ -185,3 +183,55 @@ class Gui(Tk):
                 tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],0,item[5]))
 
 
+    def voir_comptes(self):
+        self.unload_Appli(self.Frame_Appli)
+        self.Frame_Appli.pack(fill=BOTH)
+
+
+        frame_ct = Frame(self.Frame_Appli)
+        frame_ct.pack(side=LEFT, padx=20, pady=20)
+
+        tree_ct = ttk.Treeview(frame_ct)
+        tree_ct.pack(padx=2, pady=2, expand=True, fill=BOTH)
+
+        tree_ct.heading("#0", text="Comptes")
+        tree_ct.column("#0", width=200)
+
+        for i in self.Database.SelectAccounts():
+            tree_ct.insert("",0,text=i[1],values=i[1])
+
+        label = Label(self.Frame_Appli, text='Compte')
+        label.pack(expand=FALSE)
+
+        scrollbar = Scrollbar(self.Frame_Appli)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        cols = ("CLE", "Date", "Libellé", "Débit", "Crédit")
+        dcols = ("Date", "Libellé", "Débit", "Crédit")
+        tree = ttk.Treeview(self.Frame_Appli, columns=cols, displaycolumns=dcols, yscrollcommand=scrollbar.set)
+        tree['show'] = 'headings'
+        tree.column("Date", width=80)
+        tree.column("Débit", width=80)
+        tree.column("Crédit", width=80)
+
+        for i in cols:
+            tree.heading(i, text=i)
+
+        scrollbar.config(command=tree.yview)
+        tree.pack(fill=BOTH, expand=True)
+
+        tree_ct.bind("<<TreeviewSelect>>",
+                     lambda _: print(tree_ct.item(tree_ct.focus())))
+
+                     # self.JournalLoad("LoadJournal", tree,
+                     #                            tree_ct.item(tree_ct.focus())))
+
+    def JournalLoad(self, event, tree, SelectedMonth):
+        for i in tree.get_children():
+            tree.delete(i)
+        for item in self.Database.SelectAccountDetail(SelectedMonth):
+            print(item)
+            if item[4] == ('Debit'):
+                tree.insert("", 0, text="", values=(item[0], item[1], item[2], item[3], item[5], 0))
+            elif item[4] == ('Credit'):
+                tree.insert("", 0, text="", values=(item[0], item[1], item[2], item[3], 0, item[5]))

@@ -70,7 +70,7 @@ def SelectQuery(querymonth,queryyear):
 def MonthQuery():
     conn = sqlite3.connect('DB\ma_base.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT strftime('%Y',Date) FROM Journal GROUP BY strftime('%Y',Date) ORDER BY strftime('%Y',Date) """)
+    cursor.execute("""SELECT strftime('%Y',date) FROM Operation GROUP BY strftime('%Y',date) ORDER BY strftime('%Y',date) """)
     result = cursor.fetchall()
     conn.close()
     return result

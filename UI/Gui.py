@@ -1,59 +1,49 @@
 import tkinter.ttk as ttk
 from tkinter import *
 
-
-from DA.Da import *
 import DB.sqlite
+from DA.Da import *
+
 
 class Gui(Tk):
 
-    def __init__(self, parent):
-        Tk.__init__(self,parent)
-        self.parent = parent
+    def __init__(self):
+        Tk.__init__(self)
         self.Database = Da(Name='DB/ma_base.db')
-        self.initialize()
 
+        self.Frame_Appli = Frame(self, borderwidth=2, relief=GROOVE)
 
-    def initialize(self):
-        self.Frame_Appli = Frame(self.parent, borderwidth=2, relief=GROOVE)
-
-        Frame_Menu = Frame(self.parent)
-        Frame_Menu.pack(side=LEFT, padx=10,pady=10)
-
-        Bouton_Ajout = Button(Frame_Menu,text = 'Nouvelle Entrée',command=self.Add_Input)
-        Bouton_Ajout.pack(pady=5,fill=X)
-
-        Bouton_Journal = Button(Frame_Menu, text='Voir le Journal',command=self.voir_journal)
-        Bouton_Journal.pack(pady=5,fill=X)
-
-        Bouton_Comptes = Button(Frame_Menu,text='Voir les Comptes',command=self.voir_comptes)
-        Bouton_Comptes.pack(pady=5,fill=X)
-
-        Bouton_Resultat = Button(Frame_Menu, text='Voir le Resultat')
-        Bouton_Resultat.pack(pady=5,fill=X)
-
-        Bouton_Bilan = Button(Frame_Menu,text='Voir le Bilan')
-        Bouton_Bilan.pack(pady=5,fill=X)
+        self.initFrameMenu()
 
         self.Frame_Appli.pack(side=LEFT, padx=20, pady=20, fill=NONE, expand=TRUE)
-        self.Add_Input()
+        self.seeAddInput()
+
+    def initFrameMenu(self):
+        Frame_Menu = Frame(self)
+        Frame_Menu.pack(side=LEFT, padx=10, pady=10)
+        Bouton_Ajout = Button(Frame_Menu, text='Nouvelle Entrée', command=self.seeAddInput)
+        Bouton_Ajout.pack(pady=5, fill=X)
+        Bouton_Journal = Button(Frame_Menu, text='Voir le Journal', command= self.seeJournal)
+        Bouton_Journal.pack(pady=5, fill=X)
+        Bouton_Comptes = Button(Frame_Menu, text='Voir les Comptes', command=self.seeAccounts)
+        Bouton_Comptes.pack(pady=5, fill=X)
+        Bouton_Resultat = Button(Frame_Menu, text='Voir le Resultat')
+        Bouton_Resultat.pack(pady=5, fill=X)
+        Bouton_Bilan = Button(Frame_Menu, text='Voir le Bilan')
+        Bouton_Bilan.pack(pady=5, fill=X)
+
 
     def unload_Appli(self,FrameToUnload):
-
         list = FrameToUnload.pack_slaves()
         for widget in list:
             widget.destroy()
 
-    def Add_Input(self):
+    def seeAddInput(self):
         self.unload_Appli(self.Frame_Appli)
 
         # Label nouvelle entrée
         label = Label(self.Frame_Appli, text="Nouvelle entrée")
         label.pack()
-
-        # Frame conteneur
-        # Frame1 = Frame(self.Frame_Appli, borderwidth=2, relief=GROOVE)
-        # Frame1.pack(side=TOP, padx=30, pady=20)
 
         # Date
         label = Label(self.Frame_Appli, text="Date (jj/mm/aaaa)")
@@ -70,7 +60,6 @@ class Gui(Tk):
         maliste = self.Database.SelectAccounts()
         for i in maliste:
             listeComptes.insert(i[0],str('  ' + i[1]))
-            print (i[0],i[1])
         listeComptes.pack(pady=5)
 
         # Libelle
@@ -79,7 +68,7 @@ class Gui(Tk):
         iptLib = Entry(self.Frame_Appli, width=60)
         iptLib.pack(padx=30)
 
-        # Frame conteneur
+        # JournalFrame.py conteneur
         Frame2 = Frame(self.Frame_Appli, borderwidth=2, relief=GROOVE)
         Frame2.pack(side=TOP, pady=10)
 
@@ -97,9 +86,6 @@ class Gui(Tk):
         iptMontant = Entry(self.Frame_Appli, width=60)
         iptMontant.pack()
 
-
-
-
         # bouton valider
         bouton = Button(self.Frame_Appli,
                         text="valider",width=50,
@@ -107,10 +93,9 @@ class Gui(Tk):
                                                 maliste[listeComptes.curselection()[0]],
                                                 iptLib.get(), iptSens.get(), iptMontant.get()))
 
-
         bouton.pack(pady=10)
 
-    def voir_journal(self):
+    def seeJournal(self):
 
         self.unload_Appli(self.Frame_Appli)
 
@@ -161,15 +146,14 @@ class Gui(Tk):
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
 
-        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.JournalLoad('',tree, parentz=str(tree_dt.parent(item=tree_dt.focus())),
+        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.journalLoad('', tree, parentz=str(tree_dt.parent(item=tree_dt.focus())),
                                                                       childrenz=str(tree_dt.item(tree_dt.focus())['values'][0])))
 
 
-    def JournalLoad(self, event, tree, childrenz, parentz):
+    def journalLoad(self, event, tree, childrenz, parentz):
         for i in tree.get_children():
             tree.delete(i)
 
-        print(childrenz,parentz)
         parentz=str(parentz)
         if len(str(childrenz))==1:
             childrenz = '0' + str(childrenz)
@@ -177,14 +161,13 @@ class Gui(Tk):
             childrenz = str(childrenz)
 
         for item in self.Database.SelectQuery(childrenz, parentz):
-            print(item)
             if item[4]==('Debit'):
                 tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],item[5],0))
             elif item[4]==('Credit'):
                 tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],0,item[5]))
 
 
-    def voir_comptes(self):
+    def seeAccounts(self):
         self.unload_Appli(self.Frame_Appli)
         self.Frame_Appli.pack(fill=BOTH)
 
@@ -197,8 +180,8 @@ class Gui(Tk):
         tree_ct.heading("#0", text="Comptes")
         tree_ct.column("#0", width=200)
 
-        for i in self.Database.SelectAccounts():
 
+        for i in self.Database.SelectAccounts():
             tree_ct.insert("",0,text=i[1],values=[i[1]])
 
         label = Label(self.Frame_Appli, text='Compte')
@@ -222,13 +205,12 @@ class Gui(Tk):
         tree.pack(fill=BOTH, expand=True)
 
         tree_ct.bind("<<TreeviewSelect>>",
-                     lambda _: self.AccLoad(tree, SelectedMonth= tree_ct.item(tree_ct.focus())['values']))
+                     lambda _: self.accountsLoad(tree, SelectedMonth= tree_ct.item(tree_ct.focus())['values']))
 
-    def AccLoad(self, tree, SelectedMonth):
+    def accountsLoad(self, tree, SelectedMonth):
         for i in tree.get_children():
             tree.delete(i)
 
-        print(SelectedMonth)
         for item in self.Database.SelectAccountDetail(SelectedMonth):
 
             if item[4] == ('Debit'):

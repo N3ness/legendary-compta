@@ -1,5 +1,7 @@
-import dateutil.parser as parser
 import sqlite3
+
+import dateutil.parser as parser
+
 
 class Da:
 
@@ -43,7 +45,6 @@ class Da:
             SensBanque = 'Debit'
 
 
-        print(iptCompte[0])
         iptDate= str(parser.parse(iptDate).year) + '-' + mois + '-' + jour
         self.AddToBase(str(iptDate), iptCompte[0], str(iptLibelle), Sens, iptMontant)
         self.AddToBase(str(iptDate), 4, str(iptLibelle), SensBanque, iptMontant)
@@ -143,6 +144,14 @@ class Da:
         conn.commit()
         conn.close()
 
+    def AddAccount(self, AccName, AccType):
+        conn = sqlite3.connect(self.databaseName)
+        cursor = conn.cursor()
+        cursor.execute("""
+        ALTER TABLE Journal
+        ADD Commonid INTEGER""", (AccName, AccType))
+        conn.commit()
+        conn.close()
 
     #REQUETE SUPRESSION
     # conn = sqlite3.connect('ma_base.db')

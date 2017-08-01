@@ -10,9 +10,8 @@ class Gui(Tk):
     def __init__(self, parent):
         Tk.__init__(self,parent)
         self.parent = parent
-        self.Database=Da(Name='DB/ma_base.db')
+        self.Database = Da(Name='DB/ma_base.db')
         self.initialize()
-
 
 
     def initialize(self):
@@ -162,20 +161,22 @@ class Gui(Tk):
         scrollbar.config(command=tree.yview)
         tree.pack(fill=BOTH,expand=True)
 
-        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.JournalLoad('',tree,tree_dt.parent(item=tree_dt.focus()),
-                                                                        tree_dt.item(tree_dt.focus())['values'][0]))
+        tree_dt.bind("<<TreeviewSelect>>", lambda _: self.JournalLoad('',tree, parentz=str(tree_dt.parent(item=tree_dt.focus())),
+                                                                      childrenz=str(tree_dt.item(tree_dt.focus())['values'][0])))
 
 
-    def JournalLoad(self,event,tree,SelectedYear,SelectedMonth):
+    def JournalLoad(self, event, tree, childrenz, parentz):
         for i in tree.get_children():
             tree.delete(i)
-        SelectedYear=str(SelectedYear)
-        if len(str(SelectedMonth))==1:
-            SelectedMonth = '0' + str(SelectedMonth)
-        else:
-            SelectedMonth = str(SelectedMonth)
 
-        for item in self.Database.SelectQuery(SelectedMonth, SelectedYear):
+        print(childrenz,parentz)
+        parentz=str(parentz)
+        if len(str(childrenz))==1:
+            childrenz = '0' + str(childrenz)
+        else:
+            childrenz = str(childrenz)
+
+        for item in self.Database.SelectQuery(childrenz, parentz):
             print(item)
             if item[4]==('Debit'):
                 tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],item[5],0))
@@ -186,7 +187,6 @@ class Gui(Tk):
     def voir_comptes(self):
         self.unload_Appli(self.Frame_Appli)
         self.Frame_Appli.pack(fill=BOTH)
-
 
         frame_ct = Frame(self.Frame_Appli)
         frame_ct.pack(side=LEFT, padx=20, pady=20)

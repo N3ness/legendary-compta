@@ -129,16 +129,20 @@ class Da:
         conn = sqlite3.connect(self.databaseName)
         cursor = conn.cursor()
         if queryparentz =='':
-            cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
-                                        FROM Journal j JOIN Comptes c ON j.compte = c.id
-                                        WHERE strftime('%Y',j.date) =?
-                                        ORDER BY j.date
+            cursor.execute("""SELECT j.idJournal, o.date,c.libelle,o.libelle,j.sens,o.montant
+                            FROM Journal j 
+                            JOIN Comptes c ON j.idCompte = c.idCompte
+                            JOIN Operation o ON o.idJournal1 = j.idJournal
+                            WHERE strftime('%Y', o.date) = ?
+                            ORDER BY o.date
                                          """, ([str(querychildrenz)]))
         else:
-            cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
-                            FROM Journal j JOIN Comptes c ON j.compte = c.id
-                            WHERE strftime('%m',j.date) =? AND strftime('%Y', j.date) = ?
-                            ORDER BY j.date
+            cursor.execute("""SELECT j.idJournal, o.date,c.libelle,o.libelle,j.sens,o.montant
+                            FROM Journal j 
+                            JOIN Comptes c ON j.idCompte = c.idCompte
+                            JOIN Operation o ON o.idJournal1 = j.idJournal
+                            WHERE strftime('%m',o.date) =? AND strftime('%Y', o.date) = ?
+                            ORDER BY o.date
                              """,(querychildrenz,queryparentz))
         result = cursor.fetchall()
         conn.close()
@@ -147,10 +151,12 @@ class Da:
     def SelectAccountDetail(self,Account):
         conn = sqlite3.connect(self.databaseName)
         cursor = conn.cursor()
-        cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
-                        FROM Journal j JOIN Comptes c ON j.compte = c.id
-                        WHERE c.compte = ?
-                        ORDER BY j.date""",(Account))
+        cursor.execute("""SELECT j.idJournal, o.date,c.libelle,o.libelle,j.sens,o.montant
+                        FROM Journal j 
+                        JOIN Comptes c ON j.idCompte = c.idCompte
+                        JOIN Operation o ON o.idJournal1 = j.idJournal
+                        WHERE c.libelle = ?
+                        ORDER BY o.date""",(Account))
         result = cursor.fetchall()
         conn.close()
         return result

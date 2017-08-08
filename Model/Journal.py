@@ -1,6 +1,6 @@
 class Journal:
 
-    def __init__(self, idJournal, sens, idCompte):
+    def __init__(self, idJournal, libelle, date):
         self.idJournal = idJournal
-        self.idCompte = idCompte
-        self.sens = sens
+        self.libelle = libelle
+        self.date = date

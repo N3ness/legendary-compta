@@ -1,7 +1,5 @@
 import tkinter.ttk as ttk
 from tkinter import *
-
-import DB.sqlite
 from DA.Da import *
 
 
@@ -9,7 +7,7 @@ class Gui(Tk):
 
     def __init__(self):
         Tk.__init__(self)
-        self.Database = Da(Name='DB/ma_base.db')
+        self.Database = Da(Name='DB/legendaryCompta.db')
 
         self.Frame_Appli = Frame(self, borderwidth=2, relief=GROOVE)
 
@@ -57,9 +55,9 @@ class Gui(Tk):
 
         listeComptes = Listbox(self.Frame_Appli,width=60)
 
-        maliste = self.Database.SelectAccounts()
+        maliste = self.Database.getAllAccounts()
         for i in maliste:
-            listeComptes.insert(i[0],str('  ' + i[1]))
+            listeComptes.insert(i[0],i[1])
         listeComptes.pack(pady=5)
 
         # Libelle
@@ -89,9 +87,9 @@ class Gui(Tk):
         # bouton valider
         bouton = Button(self.Frame_Appli,
                         text="valider",width=50,
-                        command=lambda: self.Database.AddToDB(iptDate.get(),
-                                                maliste[listeComptes.curselection()[0]],
-                                                iptLib.get(), iptSens.get(), iptMontant.get()))
+                        command=lambda: self.Database.formatAndSaveEcritures(iptDate.get(),
+                                                                             maliste[listeComptes.curselection()[0]],
+                                                                             iptLib.get(), iptSens.get(), iptMontant.get()))
 
         bouton.pack(pady=10)
 
@@ -111,7 +109,7 @@ class Gui(Tk):
         tree_dt.heading("#0",text="Date")
         tree_dt.column("#0", width=110)
 
-        for dt in DB.sqlite.MonthQuery():
+        for dt in self.Database.getAllMonths():
             id = tree_dt.insert("",0,iid= parser.parse(dt[0]).year,text=parser.parse(dt[0]).year,values=parser.parse(dt[0]).year)
             tree_dt.insert(id, "end", text='Janvier', values=1)
             tree_dt.insert(id, "end", text='Février', values=2)
@@ -160,11 +158,8 @@ class Gui(Tk):
         else:
             childrenz = str(childrenz)
 
-        for item in self.Database.SelectQuery(childrenz, parentz):
-            if item[4]==('Debit'):
-                tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],item[5],0))
-            elif item[4]==('Credit'):
-                tree.insert("", 0, text="", values=(item[0],item[1],item[2],item[3],0,item[5]))
+        for ecritureView in self.Database.getEcrituresByMonthAndYear(childrenz, parentz):
+            self.insertJournalViewInTree(ecritureView,tree)
 
 
     def seeAccounts(self):
@@ -181,7 +176,7 @@ class Gui(Tk):
         tree_ct.column("#0", width=200)
 
 
-        for i in self.Database.SelectAccounts():
+        for i in self.Database.getAllAccounts():
             tree_ct.insert("",0,text=i[1],values=[i[1]])
 
         label = Label(self.Frame_Appli, text='Compte')
@@ -211,9 +206,18 @@ class Gui(Tk):
         for i in tree.get_children():
             tree.delete(i)
 
-        for item in self.Database.SelectAccountDetail(SelectedMonth):
+        for accountView in self.Database.getEcrituresByAccount(SelectedMonth):
+            self.insertAccountViewInTree(accountView,tree)
 
-            if item[4] == ('Debit'):
-                tree.insert("", 0, text="", values=(item[0],item[1], item[3], item[5], 0))
-            elif item[4] == ('Credit'):
-                tree.insert("", 0, text="", values=(item[0],item[1], item[3], 0, item[5]))
+
+    def insertJournalViewInTree(self, journalView, tree):
+        if journalView.sens == ('Debit'):
+            tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.date, journalView.libelleCompte, journalView.libelleJournal, journalView.montant, 0))
+        elif journalView.sens == ('Credit'):
+            tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.date, journalView.libelleCompte, journalView.libelleJournal, 0, journalView.montant))
+
+    def insertAccountViewInTree(self, accountView, tree):
+        if accountView.sens == ('Debit'):
+            tree.insert("", 0, text="", values=(accountView.idEcriture, accountView.date, accountView.libelleJournal, accountView.montant, 0))
+        elif accountView.sens == ('Credit'):
+            tree.insert("", 0, text="", values=(accountView.idEcriture, accountView.date, accountView.libelleJournal, 0, accountView.montant))

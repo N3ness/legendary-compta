@@ -2,6 +2,10 @@ import sqlite3
 
 import dateutil.parser as parser
 
+from Model.Compte import Compte
+from Model.Journal import Journal
+from Model.Operation import Operation
+
 
 class Da:
 
@@ -15,6 +19,23 @@ class Da:
         conn.commit()
         conn.close()
 
+    def __insert(self, query, params):
+        conn = sqlite3.connect(self.databaseName)
+        cursor = conn.cursor()
+        cursor.execute(query,params)
+        id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return id
+
+    def __select(self, query, params):
+        conn = sqlite3.connect(self.databaseName)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        result = cursor.fetchall()
+        conn.commit()
+        conn.close()
+        return result
 
     def AddToDB(self, iptDate, iptCompte, iptLibelle, iptSens, iptMontant):
         Sens=''
@@ -44,24 +65,34 @@ class Da:
         elif Sens == 'Credit':
             SensBanque = 'Debit'
 
-
         iptDate= str(parser.parse(iptDate).year) + '-' + mois + '-' + jour
-        self.AddToBase(str(iptDate), iptCompte[0], str(iptLibelle), Sens, iptMontant)
-        self.AddToBase(str(iptDate), 4, str(iptLibelle), SensBanque, iptMontant)
+
+        self.createOperation(str(iptDate), iptCompte[0], str(iptLibelle), Sens, iptMontant)
 
 
-    def createJournalTable(self):
-        return self.__query("""
-        CREATE TABLE Journal(
-             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-             Date DATE,
-             Compte INTEGER,
-             Libelle TEXT,
-             Sens TEXT,
-             Montant REAL,
-             FOREIGN KEY(Compte) REFERENCES Comptes(id)
-             )""")
+    def createOperation(self,date, idCompte, libelle, sens, montant):
+        idJ1 = self.createJournal(idCompte,sens)
+        compte = self.getCompteById(idCompte)
+        idJSym = self.createSymJournal(compte.idCompteSymetric,sens)
+        return self.__insert("""INSERT INTO Operation(idJournal1, idJournal2, libelle, date, montant) VALUES(?, ?, ?, ?, ?)""", (idJ1, compte.idCompteSymetric, libelle, date, montant))
 
+    def createJournal(self,idCompte,sens):
+        return self.__insert("""INSERT INTO Journal(idCompte, sens) VALUES(?, ?)""", (idCompte, sens))
+
+    def createSymJournal(self,idCompteSym, sens):
+        if sens == 'Debit':
+            sens = 'Credit'
+        elif sens == 'Credit':
+            sens = 'Debit'
+        return self.createJournal(idCompteSym, sens)
+
+    def getCompteById(self,id):
+        compte =  self.__select("""SELECT * FROM Comptes WHERE idCompte = ? """, (id,))
+        return Compte(compte[0][0], compte[0][1], compte[0][2], compte[0][3])
+
+    def getJournalById(self,id):
+        journal =  self.__select("""SELECT * FROM Journal WHERE idJournal = ? """, (id,))
+        return Journal(journal[0], journal[1], journal[2])
 
     #REQUETE INSERTION LIGNE
     def AddToBase(self,DBDate,DBCompte,DBLibelle,DBSens,DBMontant):
@@ -73,9 +104,6 @@ class Da:
         conn.commit()
         conn.close()
 
-
-
-
     def AddAccount(self,AccName,AccType):
 
         conn = sqlite3.connect(self.databaseName)
@@ -85,13 +113,12 @@ class Da:
         conn.commit()
         conn.close()
 
-
     def SelectAccounts(self):
 
         conn = sqlite3.connect(self.databaseName)
         cursor = conn.cursor()
         cursor.execute("""
-        SELECT id,compte, type FROM Comptes""")
+        SELECT idCompte,libelle, type FROM Comptes""")
         result = cursor.fetchall()
         conn.close()
         return result
@@ -102,16 +129,20 @@ class Da:
         conn = sqlite3.connect(self.databaseName)
         cursor = conn.cursor()
         if queryparentz =='':
-            cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
-                                        FROM Journal j JOIN Comptes c ON j.compte = c.id
-                                        WHERE strftime('%Y',j.date) =?
-                                        ORDER BY j.date
+            cursor.execute("""SELECT j.idJournal, o.date,c.libelle,o.libelle,j.sens,o.montant
+                            FROM Journal j 
+                            JOIN Comptes c ON j.idCompte = c.idCompte
+                            JOIN Operation o ON o.idJournal1 = j.idJournal
+                            WHERE strftime('%Y', o.date) = ?
+                            ORDER BY o.date
                                          """, ([str(querychildrenz)]))
         else:
-            cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
-                            FROM Journal j JOIN Comptes c ON j.compte = c.id
-                            WHERE strftime('%m',j.date) =? AND strftime('%Y', j.date) = ?
-                            ORDER BY j.date
+            cursor.execute("""SELECT j.idJournal, o.date,c.libelle,o.libelle,j.sens,o.montant
+                            FROM Journal j 
+                            JOIN Comptes c ON j.idCompte = c.idCompte
+                            JOIN Operation o ON o.idJournal1 = j.idJournal
+                            WHERE strftime('%m',o.date) =? AND strftime('%Y', o.date) = ?
+                            ORDER BY o.date
                              """,(querychildrenz,queryparentz))
         result = cursor.fetchall()
         conn.close()
@@ -120,10 +151,12 @@ class Da:
     def SelectAccountDetail(self,Account):
         conn = sqlite3.connect(self.databaseName)
         cursor = conn.cursor()
-        cursor.execute("""SELECT j.id, j.date,c.compte,j.libelle,j.sens,j.montant
-                        FROM Journal j JOIN Comptes c ON j.compte = c.id
-                        WHERE c.compte = ?
-                        ORDER BY j.date""",(Account))
+        cursor.execute("""SELECT j.idJournal, o.date,c.libelle,o.libelle,j.sens,o.montant
+                        FROM Journal j 
+                        JOIN Comptes c ON j.idCompte = c.idCompte
+                        JOIN Operation o ON o.idJournal1 = j.idJournal
+                        WHERE c.libelle = ?
+                        ORDER BY o.date""",(Account))
         result = cursor.fetchall()
         conn.close()
         return result
@@ -136,14 +169,6 @@ class Da:
         conn.close()
         return result
 
-    #REQUETE SUPRESSION
-    def Suppression(self):
-        conn = sqlite3.connect(self.databaseName)
-        cursor = conn.cursor()
-        cursor.execute("""DELETE FROM Journal""")
-        conn.commit()
-        conn.close()
-
     def AddAccount(self, AccName, AccType):
         conn = sqlite3.connect(self.databaseName)
         cursor = conn.cursor()
@@ -152,11 +177,4 @@ class Da:
         ADD Commonid INTEGER""", (AccName, AccType))
         conn.commit()
         conn.close()
-
-    #REQUETE SUPRESSION
-    # conn = sqlite3.connect('ma_base.db')
-    # cursor = conn.cursor()
-    # cursor.execute("""DROP TABLE Journal""")
-    # conn.commit()
-    # conn.close()
 

@@ -158,8 +158,8 @@ class Gui(Tk):
         else:
             childrenz = str(childrenz)
 
-        for ecritureView in self.Database.getEcrituresByMonthAndYear(childrenz, parentz):
-            self.insertJournalViewInTree(ecritureView,tree)
+        for journalView in self.Database.getEcrituresByMonthAndYear(childrenz, parentz):
+            self.insertJournalViewInTree(journalView,tree)
 
 
     def seeAccounts(self):

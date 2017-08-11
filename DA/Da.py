@@ -11,7 +11,7 @@ from Views.JournalView import JournalView
 
 class Da:
 
-    sens = ['Credit','Debit']
+    sens = ['Debit','Credit']
 
     def __init__(self,Name):
         self.databaseName = Name
@@ -56,7 +56,6 @@ class Da:
         iptDate= str(parser.parse(iptDate).year) + '-' + mois + '-' + jour
 
         self.newJournal(str(iptDate), iptCompte[0], str(iptLibelle), iptSens, iptMontant)
-
 
     def newJournal(self,date, idCompte, libelle, idxSens, montant):
         idNewJournal = self.createJournal(libelle,date)

@@ -254,7 +254,7 @@ class Gui(Tk):
         self.unload_Appli(self.Frame_Appli)
         self.Frame_Appli.pack(fill=BOTH)
 
-        label = Label(self.Frame_Appli, text="Compte")
+        label = Label(self.Frame_Appli, text="Supprimer un compte")
         label.pack()
 
         listeComptes = Listbox(self.Frame_Appli, width=60)
@@ -271,8 +271,8 @@ class Gui(Tk):
     def deleteAccountFromDB(self,accountDetail):
         if askyesno('Suppression','Êtes-vous sûr(e) de vouloir supprimer le compte ' + accountDetail[1] + '?',icon='warning') == True:
             if askyesno('Suppression', 'Sûr(e) et certain(ne)?',icon='warning') == True:
-                print("c'est le début de la fin!")
                 self.Database.deleteAccount(accountDetail[0])
+                self.seeDeleteAccount()
                 showinfo('succès','Le compte '+ accountDetail[1] + ' a été supprimé avec succès')
 
     def seeAddAccount(self):
@@ -280,6 +280,53 @@ class Gui(Tk):
         self.Frame_Appli.pack(fill=BOTH)
 
         # Label nouvelle entrée
-        label = Label(self.Frame_Appli, text="Nouveau Compte")
+        label = Label(self.Frame_Appli, text="Ajouter un Compte")
+        label.pack(pady=20)
+
+        label = Label(self.Frame_Appli, text="Libellé du Compte")
         label.pack()
+        iptAccount = Entry(self.Frame_Appli, width=60)
+        iptAccount.pack(padx=30,pady=10)
+
+        label = Label(self.Frame_Appli, text="Type de Compte")
+        label.pack()
+        typeList=[[0,'Charge'],[1, "Produit"],[2, "Actif"],[3, "Passif"]]
+        accType = Listbox(self.Frame_Appli, width=60,height =5)
+        for row, type in typeList:
+            accType.insert(row, type)
+        accType.pack(pady=10)
+
+        label = Label(self.Frame_Appli, text="Contrepartie")
+        label.pack()
+
+        symetricsList=[[1,"Banque"]]
+        accSymetric = Listbox(self.Frame_Appli, width=60, height=2,exportselection=0)
+
+        for row, sym in symetricsList:
+            accSymetric.insert(row, sym)
+        accSymetric.pack(pady=10)
+
+        bouton = Button(self.Frame_Appli,
+                        text="Ajouter", width=50,
+                         command= lambda: self.addAccountToDB(accName=iptAccount.get(), typeDetails=typeList[accType.curselection()[0]],
+                                                              symetricDetails=symetricsList[accSymetric.curselection()[0]]))
+        bouton.pack()
+
+        # self.addAccountToDB(iptAccount, typeList[accType.curselection()[0]],
+        #                     symetricsList[accSymetric.curselection()[0]])
+        # addAccountToDB(iptAccount, typeList[accType.curselection()[0]],symetricList[accSymetric.curselection()[0]])
+
+    def addAccountToDB(self, accName,typeDetails, symetricDetails):
+
+        type = str(typeDetails[1])
+
+        if symetricDetails[1] == 'Banque':
+            symetricID = 2
+        else:
+            symetricID = 0
+
+        self.Database.createAccount(symetricID,accName,type)
+        self.seeAddAccount()
+        showinfo('succès', 'Le compte ' + accName + ' a été ajouté avec succès')
+
 

@@ -72,6 +72,9 @@ class Da:
     def createJournal(self,libelle,date):
         return self.__insert("""INSERT INTO Journal(libelle, date) VALUES(?, ?)""", (libelle, date))
 
+    def createAccount(self,symmetric,libelle,type):
+        return self.__insert("""INSERT INTO Compte(idCompteSymetrique, libelle, type) VALUES(?, ?, ?)""", (symmetric, libelle,type))
+
     def getAccountById(self, idCompte):
         compte =  self.__select("""SELECT * FROM Compte WHERE idCompte = ? """, (idCompte,))
         return Compte(compte[0][0], compte[0][1], compte[0][2], compte[0][3])

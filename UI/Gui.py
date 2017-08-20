@@ -11,10 +11,21 @@ class Gui(Tk):
 
         self.Frame_Appli = Frame(self, borderwidth=2, relief=GROOVE)
 
+        self.initMenuBar()
         self.initFrameMenu()
 
         self.Frame_Appli.pack(side=LEFT, padx=20, pady=20, fill=NONE, expand=TRUE)
         self.seeAddInput()
+
+    def initMenuBar(self):
+        menubar = Menu(self)
+        menubar.add_command(label="Quitter", command=self.quit)
+
+        edition = Menu(menubar,tearoff=0)
+        edition.add_command(label="Ajouter un compte")
+        edition.add_command(label="Supprimer une écriture")
+        self.config(menu=menubar)
+        menubar.add_cascade(label="Edition", menu=edition)
 
     def initFrameMenu(self):
         Frame_Menu = Frame(self)
@@ -158,8 +169,14 @@ class Gui(Tk):
         else:
             childrenz = str(childrenz)
 
+        for totalJournalView in self.Database.getTotalEcrituresByMonthAndYear(childrenz, parentz):
+            self.insertTotalJournalViewInTree(totalJournalView, tree)
+
+        self.insertEmptyJournalLine(tree)
+
         for journalView in self.Database.getEcrituresByMonthAndYear(childrenz, parentz):
-            self.insertJournalViewInTree(journalView,tree)
+            self.insertJournalViewInTree(journalView, tree)
+
 
 
     def seeAccounts(self):
@@ -215,6 +232,15 @@ class Gui(Tk):
             tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.date, journalView.libelleCompte, journalView.libelleJournal, journalView.montant, 0))
         elif journalView.sens == ('Credit'):
             tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.date, journalView.libelleCompte, journalView.libelleJournal, 0, journalView.montant))
+
+    def insertTotalJournalViewInTree(self, journalView, tree):
+        if journalView.sens == ('Debit'):
+            tree.insert("", 0, text="", values=('', 'Total', 'Débit', '', journalView.montant, 0))
+        elif journalView.sens == ('Credit'):
+            tree.insert("", 0, text="", values=('', 'Total', 'Crédit', '', 0, journalView.montant))
+
+    def insertEmptyJournalLine(self,tree):
+        tree.insert("", 0, text="", values=('', '', '', '', '',''))
 
     def insertAccountViewInTree(self, accountView, tree):
         if accountView.sens == ('Debit'):

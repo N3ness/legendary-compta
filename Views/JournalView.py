@@ -7,3 +7,9 @@ class JournalView:
         self.libelleJournal = libelleJournal
         self.montant = montant
         self.sens = sens
+
+class TotalJournalView:
+
+    def __init__(self, montant, sens):
+        self.montant = montant
+        self.sens = sens

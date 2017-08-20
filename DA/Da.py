@@ -6,7 +6,7 @@ from Model.Compte import Compte
 from Model.Journal import Journal
 from Model.Ecriture import Ecriture
 from Views.AccountView import AccountView
-from Views.JournalView import JournalView
+from Views.JournalView import JournalView, TotalJournalView
 
 
 class Da:
@@ -100,6 +100,20 @@ class Da:
             journalViews = map(lambda x: JournalView(x[0], x[1], x[2], x[3], x[4], x[5]), self.__select(queryStart + """WHERE strftime('%m',j.date) =? AND strftime('%Y', j.date) = ?
                             ORDER BY j.date,j.libelle,e.idJournal""", (querychildrenz,queryparentz)))
         return journalViews
+
+    def getTotalEcrituresByMonthAndYear(self,querychildrenz, queryparentz):
+        queryStart = """SELECT SUM(e.montant), e.sens
+                                    FROM Ecriture e
+                                    JOIN Journal j ON j.idJournal = e.idJournal """
+        if queryparentz == '':
+            totalJournalViews = map(lambda x: TotalJournalView(x[0], x[1]), self.__select(queryStart +
+                                    """WHERE strftime('%Y', j.date) = ? GROUP BY e.sens """, (querychildrenz,)))
+        else:
+            totalJournalViews = map(lambda x: TotalJournalView(x[0], x[1]), self.__select(queryStart +
+                                    """WHERE strftime('%m',j.date) =? AND strftime('%Y', j.date) = ?
+                                    GROUP BY e.sens""", (querychildrenz, queryparentz)))
+        return totalJournalViews
+
 
     def getEcrituresByAccount(self, accountLibelle):
         accountViews = map(lambda x: AccountView(x[0],x[1],x[2],x[3],x[4]),self.__select("""SELECT e.idEcriture, j.libelle, j.date, e.montant, e.sens

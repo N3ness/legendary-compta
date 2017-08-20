@@ -1,5 +1,6 @@
 import tkinter.ttk as ttk
 from tkinter import *
+from tkinter.messagebox import *
 from DA.Da import *
 
 
@@ -22,7 +23,8 @@ class Gui(Tk):
         menubar.add_command(label="Quitter", command=self.quit)
 
         edition = Menu(menubar,tearoff=0)
-        edition.add_command(label="Ajouter un compte")
+        edition.add_command(label="Ajouter un compte",command=self.seeAddAccount)
+        edition.add_command(label="Supprimer un compte", command=self.seeDeleteAccount)
         edition.add_command(label="Supprimer une écriture")
         self.config(menu=menubar)
         menubar.add_cascade(label="Edition", menu=edition)
@@ -247,3 +249,37 @@ class Gui(Tk):
             tree.insert("", 0, text="", values=(accountView.idEcriture, accountView.date, accountView.libelleJournal, accountView.montant, 0))
         elif accountView.sens == ('Credit'):
             tree.insert("", 0, text="", values=(accountView.idEcriture, accountView.date, accountView.libelleJournal, 0, accountView.montant))
+
+    def seeDeleteAccount(self):
+        self.unload_Appli(self.Frame_Appli)
+        self.Frame_Appli.pack(fill=BOTH)
+
+        label = Label(self.Frame_Appli, text="Compte")
+        label.pack()
+
+        listeComptes = Listbox(self.Frame_Appli, width=60)
+
+        maliste = self.Database.getAllAccounts()
+        for i in maliste:
+            listeComptes.insert(i[0], i[1])
+        listeComptes.pack(pady=5)
+
+        bouton = Button(self.Frame_Appli,
+                        text="Supprimer", width=50, command=lambda: self.deleteAccountFromDB(maliste[listeComptes.curselection()[0]]))
+        bouton.pack()
+
+    def deleteAccountFromDB(self,accountDetail):
+        if askyesno('Suppression','Êtes-vous sûr(e) de vouloir supprimer le compte ' + accountDetail[1] + '?',icon='warning') == True:
+            if askyesno('Suppression', 'Sûr(e) et certain(ne)?',icon='warning') == True:
+                print("c'est le début de la fin!")
+                self.Database.deleteAccount(accountDetail[0])
+                showinfo('succès','Le compte '+ accountDetail[1] + ' a été supprimé avec succès')
+
+    def seeAddAccount(self):
+        self.unload_Appli(self.Frame_Appli)
+        self.Frame_Appli.pack(fill=BOTH)
+
+        # Label nouvelle entrée
+        label = Label(self.Frame_Appli, text="Nouveau Compte")
+        label.pack()
+

@@ -123,3 +123,8 @@ class Da:
                             WHERE c.libelle = ? """, (accountLibelle)))
         return accountViews
 
+
+    def deleteAccount(self,accountID):
+
+        self.__query("""DELETE FROM Compte
+                        WHERE Compte.idCompte = """ + str(accountID))

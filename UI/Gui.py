@@ -1,15 +1,17 @@
 import tkinter.ttk as ttk
 from tkinter import *
 from tkinter.messagebox import *
+from tkinter.filedialog import *
 from DA.Da import *
-
+from Excel.ExcelOperations import *
+import numpy as np
 
 class Gui(Tk):
 
     def __init__(self):
         Tk.__init__(self)
         self.Database = Da(Name='DB/legendaryCompta.db')
-
+        self.Excel = Operations()
         self.Frame_Appli = Frame(self, borderwidth=2, relief=GROOVE)
 
         self.initMenuBar()
@@ -159,7 +161,10 @@ class Gui(Tk):
 
         tree_dt.bind("<<TreeviewSelect>>", lambda _: self.journalLoad('', tree, parentz=str(tree_dt.parent(item=tree_dt.focus())),
                                                                       childrenz=str(tree_dt.item(tree_dt.focus())['values'][0])))
-
+        bouton=Button(self.Frame_Appli,text='Exporter vers Excel',command = lambda:self.insertJournalViewInExcel(
+                                                                        parentz=str(tree_dt.parent(item=tree_dt.focus())),
+                                                                        childrenz=str(tree_dt.item(tree_dt.focus())['values'][0])))
+        bouton.pack()
 
     def journalLoad(self, event, tree, childrenz, parentz):
         for i in tree.get_children():
@@ -180,6 +185,29 @@ class Gui(Tk):
             self.insertJournalViewInTree(journalView, tree)
 
 
+    def insertJournalViewInExcel(self, parentz, childrenz):
+        parentz = str(parentz)
+        if len(str(childrenz)) == 1:
+            childrenz = '0' + str(childrenz)
+        else:
+            childrenz = str(childrenz)
+
+        iterator=0
+
+        journalList=np.array([['ID','Date','Compte','Libelle','Débit','Crédit']])
+        for journalView in self.Database.getEcrituresByMonthAndYear(childrenz, parentz):
+            if journalView.sens == ('Debit'):
+                journalList=np.append(journalList, [[journalView.idEcriture, journalView.date,
+                                        journalView.libelleCompte, journalView.libelleJournal,
+                                        journalView.montant, 0]],axis=0)
+            elif journalView.sens == ('Credit'):
+                journalList=np.append(journalList,[[journalView.idEcriture, journalView.date,
+                                        journalView.libelleCompte, journalView.libelleJournal,
+                                        0, journalView.montant]],axis=0)
+            iterator+=1
+        path=asksaveasfilename(defaultextension='.xlsx',initialdir='C:\\',initialfile='Journal Comptable ' + parentz + childrenz)
+
+        self.Excel.createJournalReport(journalList,path)
 
     def seeAccounts(self):
         self.unload_Appli(self.Frame_Appli)

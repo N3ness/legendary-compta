@@ -1,7 +1,8 @@
 class JournalView:
 
-    def __init__(self, idEcriture, libelleJournal, date, libelleCompte, montant, sens):
+    def __init__(self, idEcriture, idJournal, libelleJournal, date, libelleCompte, montant, sens):
         self.idEcriture = idEcriture
+        self.idJournal = idJournal
         self.date = date
         self.libelleCompte = libelleCompte
         self.libelleJournal = libelleJournal

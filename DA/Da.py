@@ -92,15 +92,15 @@ class Da:
         return accounts
 
     def getEcrituresByMonthAndYear(self, querychildrenz, queryparentz):
-        queryStart = """SELECT e.idEcriture, j.libelle, j.date, c.libelle, e.montant, e.sens
+        queryStart = """SELECT e.idEcriture, e.idJournal, j.libelle, j.date, c.libelle, e.montant, e.sens
                             FROM Ecriture e 
                             JOIN Compte c ON e.idCompte = c.idCompte
                             JOIN Journal j ON j.idJournal = e.idJournal """
         if queryparentz =='':
-            journalViews = map(lambda x: JournalView(x[0], x[1], x[2], x[3], x[4], x[5]), self.__select(queryStart + """WHERE strftime('%Y', j.date) = ?
+            journalViews = map(lambda x: JournalView(x[0], x[1], x[2], x[3], x[4], x[5],x[6]), self.__select(queryStart + """WHERE strftime('%Y', j.date) = ?
                             ORDER BY j.date,j.libelle,e.idJournal""", (querychildrenz,)))
         else:
-            journalViews = map(lambda x: JournalView(x[0], x[1], x[2], x[3], x[4], x[5]), self.__select(queryStart + """WHERE strftime('%m',j.date) =? AND strftime('%Y', j.date) = ?
+            journalViews = map(lambda x: JournalView(x[0], x[1], x[2], x[3], x[4], x[5],x[6]), self.__select(queryStart + """WHERE strftime('%m',j.date) =? AND strftime('%Y', j.date) = ?
                             ORDER BY j.date,j.libelle,e.idJournal""", (querychildrenz,queryparentz)))
         return journalViews
 
@@ -131,3 +131,7 @@ class Da:
 
         self.__query("""DELETE FROM Compte
                         WHERE Compte.idCompte = """ + str(accountID))
+
+    def deleteEntry(self,entryID):
+        self.__query("""DELETE FROM Journal
+                        WHERE Journal.idJournal = """ + str(entryID))

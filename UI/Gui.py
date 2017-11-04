@@ -27,7 +27,7 @@ class Gui(Tk):
         edition = Menu(menubar,tearoff=0)
         edition.add_command(label="Ajouter un compte",command=self.seeAddAccount)
         edition.add_command(label="Supprimer un compte", command=self.seeDeleteAccount)
-        edition.add_command(label="Supprimer une écriture")
+        edition.add_command(label="Supprimer une écriture", command=self.seeDeleteEntry)
         self.config(menu=menubar)
         menubar.add_cascade(label="Edition", menu=edition)
 
@@ -145,7 +145,7 @@ class Gui(Tk):
         scrollbar = Scrollbar(self.Frame_Appli)
         scrollbar.pack(side=RIGHT, fill=Y)
 
-        cols = ("CLE","Date","Compte", "Libellé", "Débit","Crédit")
+        cols = ("CLE","idJournal","Date","Compte", "Libellé", "Débit","Crédit")
         dcols =("Date","Compte", "Libellé", "Débit","Crédit")
         tree=ttk.Treeview(self.Frame_Appli,columns=cols, displaycolumns=dcols,yscrollcommand=scrollbar.set)
         tree['show'] = 'headings'
@@ -259,9 +259,9 @@ class Gui(Tk):
 
     def insertJournalViewInTree(self, journalView, tree):
         if journalView.sens == ('Debit'):
-            tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.date, journalView.libelleCompte, journalView.libelleJournal, journalView.montant, 0))
+            tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.idJournal,journalView.date, journalView.libelleCompte, journalView.libelleJournal, journalView.montant, 0))
         elif journalView.sens == ('Credit'):
-            tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.date, journalView.libelleCompte, journalView.libelleJournal, 0, journalView.montant))
+            tree.insert("", 0, text="", values=(journalView.idEcriture, journalView.idJournal, journalView.date, journalView.libelleCompte, journalView.libelleJournal, 0, journalView.montant))
 
     def insertTotalJournalViewInTree(self, journalView, tree):
         if journalView.sens == ('Debit'):
@@ -346,15 +346,97 @@ class Gui(Tk):
 
     def addAccountToDB(self, accName,typeDetails, symetricDetails):
 
-        type = str(typeDetails[1])
-
-        if symetricDetails[1] == 'Banque':
-            symetricID = 2
+        if accName == "":
+            showinfo('Erreur', 'Veuillez insérer un libellé de compte')
         else:
-            symetricID = 0
+            type = str(typeDetails[1])
 
-        self.Database.createAccount(symetricID,accName,type)
-        self.seeAddAccount()
-        showinfo('succès', 'Le compte ' + accName + ' a été ajouté avec succès')
+            if symetricDetails[1] == 'Banque':
+                symetricID = 2
+            else:
+                symetricID = 0
+
+            self.Database.createAccount(symetricID,accName,type)
+            self.seeAddAccount()
+            showinfo('succès', 'Le compte ' + accName + ' a été ajouté avec succès')
+
+
+    def deleteEntryFromDB(self,treeEntry):
+
+
+        if askyesno('Suppression', "Êtes-vous sûr(e) de vouloir supprimer cette écriture? Cela supprimera également "
+                    "l'écriture contrepartie ", icon='warning') == True:
+            idJournal = treeEntry.item(treeEntry.focus())['values'][1]
+            print(type(idJournal))
+
+            if type(idJournal) is int:
+                self.Database.deleteEntry(idJournal)
+                showinfo('Succès', "l'écriture a été supprimée avec succès!")
+            else:
+                showinfo('Erreur','Cette écriture ne peut pas être supprimée!')
+
+        self.seeDeleteEntry()
+
+
+    def seeDeleteEntry(self):
+        self.unload_Appli(self.Frame_Appli)
+        self.Frame_Appli.pack(fill=BOTH)
+
+
+        frame_dt = Frame(self.Frame_Appli)
+        frame_dt.pack(side=LEFT, padx=20, pady=20)
+
+        tree_dt = ttk.Treeview(frame_dt)
+
+        tree_dt.pack(padx=2, pady=2)
+
+        tree_dt.heading("#0", text="Date")
+        tree_dt.column("#0", width=110)
+
+        for dt in self.Database.getAllMonths():
+            id = tree_dt.insert("", 0, iid=parser.parse(dt[0]).year, text=parser.parse(dt[0]).year,
+                                values=parser.parse(dt[0]).year)
+            tree_dt.insert(id, "end", text='Janvier', values=1)
+            tree_dt.insert(id, "end", text='Février', values=2)
+            tree_dt.insert(id, "end", text='Mars', values=3)
+            tree_dt.insert(id, "end", text='Avril', values=4)
+            tree_dt.insert(id, "end", text='Mai', values=5)
+            tree_dt.insert(id, "end", text='Juin', values=6)
+            tree_dt.insert(id, "end", text='Juillet', values=7)
+            tree_dt.insert(id, "end", text='Aout', values=8)
+            tree_dt.insert(id, "end", text='Septembre', values=9)
+            tree_dt.insert(id, "end", text='Octobre', values=10)
+            tree_dt.insert(id, "end", text='Novembre', values=11)
+            tree_dt.insert(id, "end", text='Décembre', values=12)
+
+        label = Label(self.Frame_Appli, text='Journal')
+        label.pack(expand=FALSE)
+
+        scrollbar = Scrollbar(self.Frame_Appli)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        cols = ("CLE", "idJournal", "Date", "Compte", "Libellé", "Débit", "Crédit")
+        dcols = ("Date", "Compte", "Libellé", "Débit", "Crédit")
+        tree = ttk.Treeview(self.Frame_Appli, columns=cols, displaycolumns=dcols, yscrollcommand=scrollbar.set)
+        tree['show'] = 'headings'
+        tree.column("Date", width=80)
+        tree.column("Débit", width=80)
+        tree.column("Crédit", width=80)
+
+        for i in cols:
+            tree.heading(i, text=i)
+
+        scrollbar.config(command=tree.yview)
+        tree.pack(fill=BOTH, expand=True)
+
+        tree_dt.bind("<<TreeviewSelect>>",
+                     lambda _: self.journalLoad('', tree, parentz=str(tree_dt.parent(item=tree_dt.focus())),
+                                                childrenz=str(tree_dt.item(tree_dt.focus())['values'][0])))
+
+        bouton = Button(self.Frame_Appli, text="Supprimer l'entrée",
+                        command=lambda: self.deleteEntryFromDB(tree))
+        bouton.pack()
+
+
 
 
